@@ -6,9 +6,6 @@ messages = []
 messages.append(sys_msgs.main_llm)
 
 
-
-
-global greer
 greer = input("User: ")
 messages.append(
     {
@@ -16,8 +13,6 @@ messages.append(
         'content':greer
     },
 )
-
-
 
 try:
     res = ollama.chat(

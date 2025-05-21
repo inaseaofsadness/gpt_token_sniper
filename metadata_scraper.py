@@ -29,6 +29,7 @@ async def twitter_scrape(get_links_func, metadata_func):
     
     twitter_link = res[1]
     mint = res[3]
+    
     async with AsyncWebCrawler() as crawler:
         res = await crawler.arun(
             url = twitter_link
