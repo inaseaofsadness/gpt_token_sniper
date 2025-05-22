@@ -20,7 +20,7 @@ async def subscribe():
 
                     token = json.loads(message)
 
-                    if token.get('marketCapSol',0) < 10:
+                    if token.get('marketCapSol',0) < 20:
                         continue
 
                     token_metadata_uri = token.get('uri', None)
