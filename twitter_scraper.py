@@ -1,10 +1,7 @@
 import asyncio
-from aiohttp import ClientSession
 import os
 
 from pumpportal import subscribe
-
-API_KEY = os.getenv('SOCIALDATA_API_KEY')
 
 async def get_links(metadata_func):
     try:
@@ -14,22 +11,21 @@ async def get_links(metadata_func):
         token_img = metadata.get('image', None)
         twitter_link = metadata.get('twitter', None)
 
-        if (twitter_link == None) or (token_img == None):
-            return
+        if (twitter_link is None) or (token_img is None):
+            return None
         
         return token_img,twitter_link,mint
     
     except Exception as e:
         print(f"Error getting metadata links: {e}")
+        return None
 
 
 async def twitter_scrape(get_links_func, subscribe_func):
     try:
-        async with ClientSession() as session:
-
             res = await get_links_func(subscribe_func)
-            if res == None:
-                return
+            if res is None:
+                return None
             
             twitter_link = res[1]
 
@@ -37,59 +33,19 @@ async def twitter_scrape(get_links_func, subscribe_func):
 
             parts = twitter_link.split('/')
             
-            if parts == [''] or parts == None or 'status' in parts:
-                return
+            if parts == [''] or parts is None or 'status' in parts:
+                return None
             elif 'communities' in parts:
                 community = parts[-1]
-                url = f'https://api.socialdata.tools/twitter/community/{community}'
-
-                headers = {
-                    'Authorization': f'Bearer {API_KEY}',
-                    'Accept': 'application/json'
-                }
-
-                params = {
-                    'count': 15,
-                }
-
-                response = await session.get(url, headers=headers, params=params)
-                response.raise_for_status()
-                community_info = await response.json()
-
-                if community_info['member_count'] <= 40:
-                    return
+                print(community, mint)
+                return community
             else:
                 username = parts[-1]
-                url = f'https://api.socialdata.tools/twitter/user/{username}'
-
-                headers = {
-                    'Authorization': f'Bearer {API_KEY}',
-                    'Accept': 'application/json'
-                }
-
-                response = await session.get(url, headers=headers)
-                response.raise_for_status()
-                profile_info = await response.json()
-                follower_count = profile_info['followers_count']
-                user_id = profile_info['id']
-
-                if follower_count <= 40:
-                    return
-                
-                url = f'https://api.socialdata.tools/twitter/user/{user_id}/tweets'
-
-                headers = {
-                    'Authorization': f'Bearer {API_KEY}',
-                    'Accept': 'application/json'
-                }
-
-                response = await session.get(url, headers=headers)
-                response.raise_for_status()
-                tweets = await response.json()
-                return tweets, mint
-            
+                print(username, mint)
+                return username
     except Exception as e:
         print(f"Error scraping twitter: {e}")
+        return None
 
 
 
