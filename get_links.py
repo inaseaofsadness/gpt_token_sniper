@@ -3,10 +3,10 @@ import os
 
 from pumpportal import subscribe
 
-async def get_links(metadata_func):
+async def get_links():
     try:
 
-        metadata, mint = await metadata_func()
+        metadata, mint = await subscribe()
 
         token_img = metadata.get('image', None)
         twitter_link = metadata.get('twitter', None)
@@ -21,9 +21,9 @@ async def get_links(metadata_func):
         return None
 
 
-async def twitter_scrape(get_links_func, subscribe_func):
+async def link_parse():
     try:
-            res = await get_links_func(subscribe_func)
+            res = await get_links()
             if res is None:
                 return None
             
@@ -52,7 +52,7 @@ async def twitter_scrape(get_links_func, subscribe_func):
 if __name__ == '__main__':
     try:
         while True:
-            asyncio.run(twitter_scrape(get_links_func=get_links,subscribe_func=subscribe))
+            asyncio.run(link_parse())
             #asyncio.run(get_links(metadata_func=subscribe))
     except KeyboardInterrupt:
         print("Keyboard interrupt detected. Loop closing")
