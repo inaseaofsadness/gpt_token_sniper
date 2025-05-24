@@ -6,7 +6,7 @@ from pumpportal import subscribe
 async def get_links():
     try:
 
-        metadata, mint = await subscribe()
+        mint, name, metadata = await subscribe()
 
         token_img = metadata.get('image', None)
         twitter_link = metadata.get('twitter', None)
@@ -14,7 +14,7 @@ async def get_links():
         if (twitter_link is None) or (token_img is None):
             return None
         
-        return token_img,twitter_link,mint
+        return mint, name, twitter_link
     
     except Exception as e:
         print(f"Error getting metadata links: {e}")
@@ -27,9 +27,9 @@ async def link_parse():
             if res is None:
                 return None
             
-            twitter_link = res[1]
-
-            mint = res[2]
+            mint = res[0]
+            name = res[1]
+            twitter_link = res[2]
 
             parts = twitter_link.split('/')
             
@@ -37,12 +37,13 @@ async def link_parse():
                 return None
             elif 'communities' in parts:
                 community = parts[-1]
-                print(community, mint)
-                return community
+                print(f"Community: {community}, Mint: {mint}")
+                return name, mint, community
             else:
                 username = parts[-1]
-                print(username, mint)
-                return username
+                print(f"Username: {username}, Mint: {mint}")
+                return name, mint, username
+            
     except Exception as e:
         print(f"Error scraping twitter: {e}")
         return None

@@ -19,18 +19,23 @@ async def subscribe():
                 async for message in websocket:
 
                     token = json.loads(message)
-
-                    if token.get('marketCapSol',0) < 20:
+                    
+                    market_cap = token.get('marketCapSol', 0)
+                    
+                    if market_cap <= 30:
                         continue
+                    
+                    mint = token.get('mint', None)
+                        
+                    print(token)
+                    
+                    name = token.get('name', None)
 
                     token_metadata_uri = token.get('uri', None)
-
-                    if token_metadata_uri == None:
-                        continue
-
+               
                     res = await session.get(token_metadata_uri)
                     token_metadata = await res.json()
-                    return token_metadata, token.get('mint',None)
+                    return mint, name, token_metadata
 
     except Exception as e:
         print(f"Error subscribing to new token creation logs: {e}")
