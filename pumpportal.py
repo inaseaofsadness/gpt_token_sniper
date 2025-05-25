@@ -2,6 +2,7 @@ import asyncio
 import websockets
 import json
 from aiohttp import ClientSession
+from get_links import get_links
 
 async def subscribe():
     try:
@@ -22,20 +23,37 @@ async def subscribe():
                     
                     market_cap = token.get('marketCapSol', 0)
                     
-                    if market_cap <= 30:
-                        continue
+                    #if market_cap <= 30:
+                        #continue
                     
                     mint = token.get('mint', None)
-                        
-                    print(token)
                     
-                    name = token.get('name', None)
+                    if mint is None:
+                        continue
+                    
+                    name = token.get('name')
 
-                    token_metadata_uri = token.get('uri', None)
-               
+                    token_metadata_uri = token.get('uri')
+                    
+
                     res = await session.get(token_metadata_uri)
                     token_metadata = await res.json()
-                    return mint, name, token_metadata
+                    
+                    description = token_metadata.get('description')
+                    
+                    if description == '':
+                        continue
+                    
+                    link_info = await get_links(token_metadata)
+                
+                    if link_info is None:
+                        continue
+                    else:
+                        link_type = link_info[0]
+                        id = link_info[1]
+                        
+                    print(link_type, id)
+                    #return mint, name, token_metadata
 
     except Exception as e:
         print(f"Error subscribing to new token creation logs: {e}")
