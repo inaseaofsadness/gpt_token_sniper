@@ -2,7 +2,9 @@ import asyncio
 import websockets
 import json
 from aiohttp import ClientSession
+
 from get_links import get_links
+from get_html import get_html
 
 async def subscribe():
     try:
@@ -35,9 +37,12 @@ async def subscribe():
 
                     token_metadata_uri = token.get('uri')
                     
-
-                    res = await session.get(token_metadata_uri)
-                    token_metadata = await res.json()
+                    try:
+                        res = await session.get(token_metadata_uri)
+                        token_metadata = await res.json()
+                    except Exception as e:
+                        #metadata links often replaced with image links. clear cut rugs
+                        continue
                     
                     description = token_metadata.get('description')
                     
@@ -52,8 +57,7 @@ async def subscribe():
                         link_type = link_info[0]
                         id = link_info[1]
                         
-                    print(link_type, id)
-                    #return mint, name, token_metadata
+                    await get_html(link_type=link_type, id=id)
 
     except Exception as e:
         print(f"Error subscribing to new token creation logs: {e}")

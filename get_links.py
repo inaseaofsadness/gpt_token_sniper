@@ -16,16 +16,16 @@ async def get_links(metadata):
         if parts == [''] or parts is None or 'status' in parts:
             return None
         elif 'communities' in parts:
-            link_type = 'community link'
+            link_type = 'community'
             community = parts[-1]
             return link_type, community
         elif 'username' in parts:
-            link_type = 'user link'
+            link_type = 'user'
             username = parts[-1]
             return link_type, username
     
     except Exception as e:
-        print(f"Error getting metadata links: {e}")
+        print(f"Error getting metadata links: {e} \n Metadata: {metadata}")
         return None
 
 
