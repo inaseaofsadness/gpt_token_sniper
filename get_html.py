@@ -33,7 +33,6 @@ async def get_html(link_type, id):
             browser = await chromium.launch(headless=True, slow_mo=slowmo)
             
             is_mobile = random.choice([True, False])
-            is_mobile = False
             
             if is_mobile is True:
                 agent,port = random.choice(list(mobile.items()))
@@ -51,27 +50,34 @@ async def get_html(link_type, id):
                 
             await page.goto(url=url)
             
-            await page.wait_for_selector('article', timeout=4000)
-            
-            raw_html = await page.content()
-            
-            articles = await page.query_selector_all("article")
+            await page.wait_for_load_state('networkidle')
+            num_articles = 5
+             
             tweets = []
-
-            for article in articles:
+            
+            for i in range(1, num_articles + 1):
+                
+                selector = f"article:nth-of-type({i})"
+                
+                article = await page.query_selector(selector)
+                if not article:
+                    break
+                
                 raw_html = await article.inner_html()
                 h = CleanHTML2Text()
+                
                 parsed = h.handle(raw_html)
                 
                 if 'reposted' in parsed.lower():
                     continue
-
-                tweets.append(f"--- ✦ TWEET BREAK ✦ ---\n{link_type}\n" + parsed.strip())
-
-          
-            all_tweets = "\n\n".join(tweets)
-            print(all_tweets)
-            return all_tweets
+                
+                tweet = f"--- ✦ TWEET BREAK ✦ ---\n {parsed.strip()}"
+                tweets.append(tweet)
+             
+            if tweets != []:
+                print(tweets)
+                
+            
     
     except Exception as e:
         print(f"Error {e}")
