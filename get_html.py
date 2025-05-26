@@ -42,7 +42,7 @@ async def get_html(link_type, id):
                 agent,port = random.choice(list(pc.items()))
             
             safe_agent_name = agent.replace("/", "_").replace(";", "").replace("(", "").replace(")", "")
-            storage_state_path = f"./browser/{safe_agent_name}.json"
+            storage_state_path = f"./agents/{safe_agent_name}.json"
             
             if os.path.exists(storage_state_path):
                 context = await browser.new_context(
