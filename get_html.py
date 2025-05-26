@@ -24,8 +24,9 @@ with open('./browser/pc.json') as pc_agents:
 with open('./browser/mobile.json') as mobile_agents:
     mobile = json.load(mobile_agents)
     
-async def get_html(link_type, id):
+async def get_html(link_type, id, name):
     tweets = []
+    proxy_list = []
     try:
         async with async_playwright() as playwright:
             chromium = playwright.chromium
@@ -35,11 +36,9 @@ async def get_html(link_type, id):
             browser = await chromium.launch(headless=True, slow_mo=slowmo)
             
             is_mobile = random.choice([True, False])
-            is_mobile = False
             
             if is_mobile is True:
                 agent,port = random.choice(list(mobile.items()))
-                #storage_state = f"./browser/{agent}.json"
             else:
                 agent,port = random.choice(list(pc.items()))
             
@@ -57,14 +56,10 @@ async def get_html(link_type, id):
                     java_script_enabled=True
                     )
             else:
-                proxy_list = await get_free_proxies()
-                proxy_server = proxy_list[-1]
-                # Create new context and save state
                 context = await browser.new_context(
                     user_agent=agent,
                     viewport=port,
                     java_script_enabled=True,
-                    proxy= {"server" : proxy_server}
                     )
                 await context.storage_state(path=storage_state_path)
                 
@@ -77,9 +72,15 @@ async def get_html(link_type, id):
                 
             await page.goto(url=url)
             await page.wait_for_load_state('networkidle')
+            print(f"Twitter page for {name} found. Tweets loading...")
             
             
             articles = await page.query_selector_all('article')
+            
+            if articles == []:
+                print(f"No relevant tweets found for {name}")
+                print(f"Cross check with: {url}")
+                return None    
             
             for i in range(0, 3):
                 article = articles[i]
@@ -99,21 +100,13 @@ async def get_html(link_type, id):
                 """    
                 tweets.append(tweet_text)
             
-            if tweets != []:
+                print(f"Tweets for {name} found!")
                 print(tweets)
-            else:
-                proxy_list = await get_free_proxies()
-                proxy_server = proxy_list[-1]
-                await browser.new_context(
-                    user_agent=agent,
-                    viewport=port,
-                    java_script_enabled=True,
-                    storage_state=storage_state_path,
-                    proxy={"server": proxy_server},
-                )
+                
+
             
     except Exception as e:
-        print(f"Error getting and parsing HTML: {e}. Tweets returned: {tweets}. Proxy address: {proxy_server}")
+        print(f"Error getting and parsing HTML: {e}. Tweets returned: {tweets}.")
        
  
 if __name__ == "__main__":

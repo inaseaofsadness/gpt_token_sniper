@@ -58,7 +58,8 @@ async def subscribe():
                         link_type = link_info[0]
                         id = link_info[1]
                         
-                    await get_html(link_type=link_type, id=id)
+                    print(f"Potential moonshot. Name: {name}. CA: {mint}. Market cap: {market_cap}")
+                    await get_html(link_type=link_type, id=id, name= name)
 
     except Exception as e:
         print(f"Error subscribing to new token creation logs: {e}")

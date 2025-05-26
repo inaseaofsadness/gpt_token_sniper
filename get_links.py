@@ -7,6 +7,7 @@ async def get_links(metadata):
     try:
         token_img = metadata.get('image', None)
         twitter_link = metadata.get('twitter', None)
+        name = metadata.get('name', None)
 
         if (twitter_link is None) or (token_img is None):
             return None
@@ -18,8 +19,10 @@ async def get_links(metadata):
         elif 'communities' in parts:
             link_type = 'community'
             community = parts[-1]
+            print(f"Community profile for {name} found. Getting Twitter report...")
             return link_type, community
         elif 'username' in parts:
+            print(f"Twitter profile for {name} found. Getting Twitter report...")
             link_type = 'user'
             username = parts[-1]
             return link_type, username
