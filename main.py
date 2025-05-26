@@ -3,11 +3,13 @@ import websockets
 import json
 from aiohttp import ClientSession
 
-
+from version import __version__
 from get_links import get_links
 from get_html import get_html
+from llm import prompt
 
 async def subscribe():
+    print(f"Running sniper version {__version__}")
     try:
         uri = "wss://pumpportal.fun/api/data"
         async with websockets.connect(uri) as websocket:
@@ -16,7 +18,7 @@ async def subscribe():
                 while True:
                     try:
                         await websocket.ping()
-                        await asyncio.sleep(5)  # ping every 20 seconds
+                        await asyncio.sleep(2) 
                     except Exception:
                         break
             
@@ -54,7 +56,6 @@ async def subscribe():
                             res = await session.get(token_metadata_uri)
                             token_metadata = await res.json()
                         except Exception as e:
-                            #metadata links often replaced with image links. clear cut rugs
                             continue
                         
                         description = token_metadata.get('description')
@@ -73,7 +74,9 @@ async def subscribe():
                         tweets = await get_html(link_type=link_type, id=id)
                         
                         if tweets is not None:
-                            print(f"Coin: {name}, Tweets: {tweets}")
+                            ai_sentiment = await prompt(tweets=tweets)
+                            print(f"Coin: {name}. Tweets: {tweets}. AI sentiment: {ai_sentiment}")
+                            
             finally:
                 keepalive_task.cancel()
 
