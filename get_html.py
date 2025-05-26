@@ -2,6 +2,7 @@ import asyncio
 import random
 from playwright.async_api import async_playwright
 import html2text
+import os
 
 import json
 
@@ -36,11 +37,30 @@ async def get_html(link_type, id):
             
             if is_mobile is True:
                 agent,port = random.choice(list(mobile.items()))
+                storage_state = f"./browser/{agent}.json"
             else:
                 agent,port = random.choice(list(pc.items()))
             
-            context = await browser.new_context(user_agent=agent, viewport=port, java_script_enabled=True)
+            safe_agent_name = agent.replace("/", "_").replace(";", "").replace("(", "").replace(")", "")
+            storage_state_path = f"./browser/{safe_agent_name}.json"
             
+            if os.path.exists(storage_state_path):
+                context = await browser.new_context(
+                    storage_state=storage_state_path,
+                    user_agent=agent,
+                    viewport=port,
+                    java_script_enabled=True
+    )
+            
+            else:
+                # Create new context and save state
+                context = await browser.new_context(
+                    user_agent=agent,
+                    viewport=port,
+                    java_script_enabled=True
+    )
+                await context.storage_state(path=storage_state_path)
+                
             page = await context.new_page()
             
             if link_type == 'community':
@@ -49,35 +69,33 @@ async def get_html(link_type, id):
                 url = f'https://x.com/{id}'
                 
             await page.goto(url=url)
-            
             await page.wait_for_load_state('networkidle')
-            num_articles = 5
-             
-            tweets = []
             
-            for i in range(1, num_articles + 1):
-                
-                selector = f"article:nth-of-type({i})"
-                
-                article = await page.query_selector(selector)
-                if not article:
-                    break
+            tweets = []
+            articles = await page.query_selector_all('article')
+            
+            for i in range(0, 3):
+                article = articles[i]
                 
                 raw_html = await article.inner_html()
+                raw_html = await article.inner_html()
                 h = CleanHTML2Text()
-                
                 parsed = h.handle(raw_html)
                 
                 if 'reposted' in parsed.lower():
                     continue
                 
-                tweet = f"--- ✦ TWEET BREAK ✦ ---\n {parsed.strip()}"
-                tweets.append(tweet)
-             
+                tweet_text = f"""
+                --- ✦ TWEET BREAK ✦ ---
+                {link_type} tweet:
+                {parsed.strip()}
+                """    
+                tweets.append(tweet_text)
+            
+            
             if tweets != []:
                 print(tweets)
-                
             
     
     except Exception as e:
-        print(f"Error {e}")
+        print(f"Error: {e}, tweets returned: {tweets}")
