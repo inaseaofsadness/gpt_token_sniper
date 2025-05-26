@@ -3,7 +3,7 @@ import random
 from playwright.async_api import async_playwright
 import html2text
 import os
-
+from get_proxy import get_free_proxies
 import json
 
 class CleanHTML2Text(html2text.HTML2Text):
@@ -25,6 +25,7 @@ with open('./browser/mobile.json') as mobile_agents:
     mobile = json.load(mobile_agents)
     
 async def get_html(link_type, id):
+    tweets = []
     try:
         async with async_playwright() as playwright:
             chromium = playwright.chromium
@@ -34,15 +35,19 @@ async def get_html(link_type, id):
             browser = await chromium.launch(headless=True, slow_mo=slowmo)
             
             is_mobile = random.choice([True, False])
+            is_mobile = False
             
             if is_mobile is True:
                 agent,port = random.choice(list(mobile.items()))
-                storage_state = f"./browser/{agent}.json"
+                #storage_state = f"./browser/{agent}.json"
             else:
                 agent,port = random.choice(list(pc.items()))
             
-            safe_agent_name = agent.replace("/", "_").replace(";", "").replace("(", "").replace(")", "")
+            safe_agent_name = agent.replace("/", "_").replace(";", "").replace("(", "").replace(")", "").replace(" ", "_").replace(":","")
             storage_state_path = f"./agents/{safe_agent_name}.json"
+            
+            if not os.path.exists("./agents"):
+                os.mkdir("./agents")
             
             if os.path.exists(storage_state_path):
                 context = await browser.new_context(
@@ -50,15 +55,17 @@ async def get_html(link_type, id):
                     user_agent=agent,
                     viewport=port,
                     java_script_enabled=True
-    )
-            
+                    )
             else:
+                proxy_list = await get_free_proxies()
+                proxy_server = proxy_list[-1]
                 # Create new context and save state
                 context = await browser.new_context(
                     user_agent=agent,
                     viewport=port,
-                    java_script_enabled=True
-    )
+                    java_script_enabled=True,
+                    proxy= {"server" : proxy_server}
+                    )
                 await context.storage_state(path=storage_state_path)
                 
             page = await context.new_page()
@@ -71,7 +78,7 @@ async def get_html(link_type, id):
             await page.goto(url=url)
             await page.wait_for_load_state('networkidle')
             
-            tweets = []
+            
             articles = await page.query_selector_all('article')
             
             for i in range(0, 3):
@@ -92,10 +99,24 @@ async def get_html(link_type, id):
                 """    
                 tweets.append(tweet_text)
             
-            
             if tweets != []:
                 print(tweets)
+            else:
+                proxy_list = await get_free_proxies()
+                proxy_server = proxy_list[-1]
+                await browser.new_context(
+                    user_agent=agent,
+                    viewport=port,
+                    java_script_enabled=True,
+                    storage_state=storage_state_path,
+                    proxy={"server": proxy_server},
+                )
             
-    
     except Exception as e:
-        print(f"Error: {e}, tweets returned: {tweets}")
+        print(f"Error getting and parsing HTML: {e}. Tweets returned: {tweets}. Proxy address: {proxy_server}")
+       
+ 
+if __name__ == "__main__":
+    link_type = "user"
+    id = "solana"
+    asyncio.run(get_html(link_type= link_type, id= id))
