@@ -3,8 +3,8 @@ import random
 from playwright.async_api import async_playwright
 import html2text
 import os
-from get_proxy import get_free_proxies
 import json
+from datetime import datetime, timezone
 
 class CleanHTML2Text(html2text.HTML2Text):
     def __init__(self):
@@ -24,7 +24,7 @@ with open('./browser/pc.json') as pc_agents:
 with open('./browser/mobile.json') as mobile_agents:
     mobile = json.load(mobile_agents)
     
-async def get_html(link_type, id, name):
+async def get_html(link_type, id):
     tweets = []
     proxy_list = []
     try:
@@ -72,19 +72,26 @@ async def get_html(link_type, id, name):
                 
             await page.goto(url=url)
             await page.wait_for_load_state('networkidle')
-            print(f"Twitter page for {name} found. Tweets loading...")
-            
             
             articles = await page.query_selector_all('article')
             
             if articles == []:
-                print(f"No relevant tweets found for {name}")
-                print(f"Cross check with: {url}")
-                return None    
+                return None
             
-            for i in range(0, 3):
-                article = articles[i]
-                
+            i = 0
+            
+            for article in articles:
+                time_elem = await article.query_selector("time")
+                if time_elem:
+                    timestamp = await time_elem.get_attribute("datetime")
+                    tweet_time = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                    now = datetime.now(timezone.utc)
+                    age_minutes = (now - tweet_time).total_seconds() / 60
+                    if age_minutes >= 10:
+                        break
+                else:
+                    break
+                    
                 raw_html = await article.inner_html()
                 raw_html = await article.inner_html()
                 h = CleanHTML2Text()
@@ -99,16 +106,20 @@ async def get_html(link_type, id, name):
                 {parsed.strip()}
                 """    
                 tweets.append(tweet_text)
-            
-                print(f"Tweets for {name} found!")
-                print(tweets)
                 
-
+                i += 1
+                
+                if i == 3:
+                    break
+            
+            if tweets == []:
+                return None
+            
+            return tweets
             
     except Exception as e:
-        print(f"Error getting and parsing HTML: {e}. Tweets returned: {tweets}.")
+        print(f"Error getting and parsing HTML: {e}.")
        
- 
 if __name__ == "__main__":
     link_type = "user"
     id = "solana"
