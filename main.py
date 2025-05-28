@@ -7,7 +7,6 @@ from process_message import process_token_message
 from version import __version__
 
 async def subscribe():
-    print(f"Running sniper version {__version__}")
     try:
         uri = "wss://pumpportal.fun/api/data"
         async with websockets.connect(uri) as websocket:
@@ -40,6 +39,7 @@ async def subscribe():
 
 if __name__ == '__main__':
     try:
+        print(f"Running sniper version {__version__}")
         while True:
             asyncio.run(subscribe())
     except KeyboardInterrupt:
