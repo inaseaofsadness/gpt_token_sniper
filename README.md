@@ -55,4 +55,4 @@ This project is an automated tool for monitoring new Solana token launches, scra
 
 - The tool is designed for Solana memecoins and expects specific metadata fields.
 - The LLM verdict is based on tweet content, engagement, and address matching.
-- This was built using very fragile web scraping system (basically using random user agents and viewports to avoid detection) but getting blocked is to be expected. I'll review if adding proxies is feasible
+- This was built using very fragile web scraping system (basically using random user agents and viewports to avoid detection) but getting blocked is to be expected. I'll review if adding proxies is feasible (especially since every proxy on free-proxy-list.net is seemingly blocked)
