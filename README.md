@@ -60,7 +60,6 @@ This project is an automated tool for monitoring new Solana token launches, scra
 ## Changelog
 - **v0.1.2**    
   - Improved token logging to the terminal
-  - 
 - **v0.1.1**  
   - Added concurrent processing for token messages  
   - Improved error handling
