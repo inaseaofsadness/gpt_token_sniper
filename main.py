@@ -35,7 +35,7 @@ async def subscribe():
                 keepalive_task.cancel()
 
     except Exception as e:
-        print(f"Error subscribing to new token creation logs: {e}")
+        pass
 
 if __name__ == '__main__':
     try:
