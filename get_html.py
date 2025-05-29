@@ -118,8 +118,7 @@ async def get_html(link_type, id):
             return tweets
             
     except Exception as e:
-        print(f"Error getting and parsing HTML: {e}.")
-       
+        pass       
 if __name__ == "__main__":
     link_type = "user"
     id = "solana"

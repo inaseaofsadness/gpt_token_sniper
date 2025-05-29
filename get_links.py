@@ -26,8 +26,7 @@ async def get_links(metadata):
             return link_type, username
     
     except Exception as e:
-        print(f"Error getting metadata links: {e} \n Metadata: {metadata}")
-        return None
+        pass
 
 
 if __name__ == '__main__':
