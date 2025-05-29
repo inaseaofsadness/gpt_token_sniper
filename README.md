@@ -58,10 +58,11 @@ This project is an automated tool for monitoring new Solana token launches, scra
 - This was built using very fragile web scraping system (basically using random user agents and viewports to avoid detection) but getting blocked is to be expected. I'll review if adding proxies is feasible (especially since every proxy on free-proxy-list.net is seemingly blocked.)
 
 ## Changelog
-
-- **v1.1.0**  
+- **v0.1.2**    
+  - Improved token logging to the terminal
+- **v0.1.1**  
   - Added concurrent processing for token messages  
   - Improved error handling
 
-- **v1.0.0**  
+- **v0.1.0**  
   - Initial release: real-time token monitoring, scraping, and LLM analysis
